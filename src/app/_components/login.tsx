@@ -2,17 +2,35 @@
 
 import { useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { getSupabaseBrowserClient } from "../supabase-utils/browser-client";
 
 export const Login = ({ isPasswordLogin }: { isPasswordLogin: boolean }) => {
-  const emailInputRef = useRef(null);
-  const passwordInputRef = useRef(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const supabase = getSupabaseBrowserClient();
+  const router = useRouter();
 
   return (
     <form
+      action="/auth/pw-login"
+      method="POST"
       onSubmit={(event) => {
         event.preventDefault();
+
         if (isPasswordLogin) {
-          alert("User wants to login with password");
+          supabase.auth
+            .signInWithPassword({
+              email: emailInputRef.current!.value,
+              password: passwordInputRef.current!.value,
+            })
+            .then((result) => {
+              if (result.data?.user) {
+                router.push("/tickets");
+              } else {
+                alert("Could not sign in");
+              }
+            });
         } else {
           alert("User wants to login with magic link");
         }
