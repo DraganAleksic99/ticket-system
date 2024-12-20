@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "../supabase-utils/browser-client";
@@ -11,12 +11,27 @@ export const Login = ({ isPasswordLogin }: { isPasswordLogin: boolean }) => {
   const supabase = getSupabaseBrowserClient();
   const router = useRouter();
 
+  
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        router.push("/tickets");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <form
-      action="/auth/pw-login"
+      action={isPasswordLogin ? "/auth/pw-login" : "/auth/magic-link"}
       method="POST"
       onSubmit={(event) => {
-        event.preventDefault();
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        isPasswordLogin && event.preventDefault();
 
         if (isPasswordLogin) {
           supabase.auth
@@ -31,8 +46,6 @@ export const Login = ({ isPasswordLogin }: { isPasswordLogin: boolean }) => {
                 alert("Could not sign in");
               }
             });
-        } else {
-          alert("User wants to login with magic link");
         }
       }}
     >
