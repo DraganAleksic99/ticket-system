@@ -4,10 +4,14 @@ import { getSupabaseCookiesUtilClient } from "@/app/supabase-utils/cookies-util-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const hashed_token = searchParams.get("hashed_token");
+  const isRecovery = searchParams.get("type") === "recovery";
   const supabase = await getSupabaseCookiesUtilClient();
 
+  let verifyType = "magiclink";
+  if (isRecovery) verifyType = "recovery";
+
   const { error } = await supabase.auth.verifyOtp({
-    type: "magiclink",
+    type: verifyType,
     token_hash: hashed_token as string,
   });
 
@@ -16,6 +20,12 @@ export async function GET(request: NextRequest) {
       new URL("/error?type=invalid_magiclink", request.url)
     );
   } else {
-    return NextResponse.redirect(new URL("/tickets", request.url));
+    if (isRecovery) {
+      return NextResponse.redirect(
+        new URL("/tickets/change-password", request.url)
+      );
+    } else {
+      return NextResponse.redirect(new URL("/tickets", request.url));
+    }
   }
 }
