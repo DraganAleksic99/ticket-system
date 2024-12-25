@@ -1,4 +1,5 @@
-import { TicketList } from "../_components/ticket-list";
+import { Params } from "next/dist/server/request/params";
+import { TicketList } from "../../_components/ticket-list";
 
 const dummyTickets = [
   {
@@ -21,11 +22,13 @@ const dummyTickets = [
   },
 ];
 
-export default function TicketListPage() {
+export default async function TicketListPage({ params }: { params: Params}) {
+  const { tenant } = await params;
+
   return (
     <>
       <h2>Ticket List</h2>
-      <TicketList tickets={dummyTickets} />
+      <TicketList tickets={dummyTickets} tenant={tenant as string} />
     </>
   );
 }

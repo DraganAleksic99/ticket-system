@@ -4,6 +4,7 @@ import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "../supabase-utils/browser-client";
+import { urlPath } from "../utils/url-helpers";
 
 export enum FormType {
   passwordRecovery = "recovery",
@@ -11,14 +12,22 @@ export enum FormType {
   magicLink = "magic-link",
 }
 
-export const Login = ({ formType }: { formType: FormType }) => {
+export const Login = ({
+  formType,
+  tenant,
+  tenantName
+}: {
+  formType: FormType;
+  tenant: string;
+  tenantName: string;
+}) => {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const supabase = getSupabaseBrowserClient();
   const router = useRouter();
 
   const isPasswordRecovery = formType === "recovery";
-  const isPasswordLogin = formType === 'pw-login';
+  const isPasswordLogin = formType === "pw-login";
   const isMagicLinkLogin = formType === "magic-link";
 
   useEffect(() => {
@@ -26,7 +35,7 @@ export const Login = ({ formType }: { formType: FormType }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
-        router.push("/tickets");
+        router.push(`/${tenant}/tickets`);
       }
     });
 
@@ -36,7 +45,11 @@ export const Login = ({ formType }: { formType: FormType }) => {
 
   return (
     <form
-      action={isPasswordLogin ? "/auth/pw-login" : "/auth/magic-link"}
+      action={
+        isPasswordLogin
+          ? urlPath("/auth/pw-login", tenant)
+          : urlPath("/auth/magic-link", tenant)
+      }
       method="POST"
       onSubmit={(event) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -62,6 +75,7 @@ export const Login = ({ formType }: { formType: FormType }) => {
         <header>
           {isPasswordRecovery && <strong>Request new password</strong>}
           {!isPasswordRecovery && <strong>Login</strong>}
+          <div style={{ display: "block", fontSize: "0.7em" }}>{tenantName}</div>
         </header>
         <fieldset>
           <label htmlFor="email">
@@ -107,7 +121,7 @@ export const Login = ({ formType }: { formType: FormType }) => {
               role="button"
               className="contrast"
               href={{
-                pathname: "/",
+                pathname: `/${tenant}/`,
                 query: { magicLink: "no" },
               }}
             >
@@ -119,7 +133,7 @@ export const Login = ({ formType }: { formType: FormType }) => {
               role="button"
               className="contrast"
               href={{
-                pathname: "/",
+                pathname: `/${tenant}/`,
                 query: { magicLink: "yes" },
               }}
             >
@@ -130,7 +144,7 @@ export const Login = ({ formType }: { formType: FormType }) => {
         {!isPasswordRecovery && (
           <Link
             href={{
-              pathname: "/",
+              pathname: `/${tenant}/`,
               query: { passwordRecovery: "yes" },
             }}
             style={{

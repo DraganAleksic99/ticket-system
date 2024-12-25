@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { getSupabaseAdminClient } from "@/app/supabase-utils/admin-client";
+import { Params } from "next/dist/server/request/params";
+import { buildUrl } from "@/app/utils/url-helpers";
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Params }
+) {
+  const { tenant } = await params;
   const formData = await request.formData();
   const email = formData.get("email") as string;
   const type = formData.get("type") === "recovery" ? "recovery" : "magiclink";
@@ -17,16 +23,17 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     return NextResponse.redirect(
-      new URL("/error?type=magiclink", request.url),
+      buildUrl("/error?type=magiclink", tenant as string, request),
       302
     );
   }
 
   const hashed_token = linkData.properties?.hashed_token;
 
-  const constructedLink = new URL(
+  const constructedLink = buildUrl(
     `/auth/verify?hashed_token=${hashed_token}&type=${type}`,
-    request.url
+    tenant as string,
+    request
   );
 
   const transporter = nodemailer.createTransport({
@@ -51,6 +58,6 @@ export async function POST(request: NextRequest) {
     `,
   });
 
-  const thanksUrl = new URL("/magic-thanks", request.url);
+  const thanksUrl = buildUrl("/magic-thanks", tenant as string, request);
   return NextResponse.redirect(thanksUrl, 302);
 }

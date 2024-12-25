@@ -8,13 +8,20 @@ export async function middleware(request: NextRequest) {
   const requestedPath = request.nextUrl.pathname;
   const user = session.data?.session?.user;
 
-  if (requestedPath.startsWith("/tickets")) {
+  const [tenant, ...restOfPath] = requestedPath.substr(1).split("/");
+  const applicationPath = "/" + restOfPath.join("/");
+
+  if (!/[a-z0-9-_]+/.test(tenant)) {
+    return NextResponse.rewrite(new URL("/not-found", request.url));
+  }
+
+  if (applicationPath.startsWith("/tickets")) {
     if (!user) {
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(new URL(`/${tenant}`, request.url));
     }
-  } else if (requestedPath === "/") {
+  } else if (applicationPath === "/") {
     if (user) {
-      return NextResponse.redirect(new URL("/tickets", request.url));
+      return NextResponse.redirect(new URL(`/${tenant}/tickets`, request.url));
     }
   }
 

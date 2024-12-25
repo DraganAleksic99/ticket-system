@@ -4,8 +4,9 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "../supabase-utils/browser-client";
+import { urlPath } from "../utils/url-helpers";
 
-export function Navigation() {
+export function Navigation({ tenant }: { tenant: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = getSupabaseBrowserClient();
@@ -18,7 +19,7 @@ export function Navigation() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
-        router.push("/");
+        router.push(`/${tenant}`);
       }
     });
 
@@ -32,8 +33,8 @@ export function Navigation() {
         <li>
           <Link
             role="button"
-            href="/tickets"
-            {...(pathname === "/tickets" ? activeProps : inactiveProps)}
+            href={urlPath("/tickets", tenant)}
+            {...(pathname === urlPath("/tickets", tenant) ? activeProps : inactiveProps)}
           >
             Ticket List
           </Link>
@@ -41,8 +42,8 @@ export function Navigation() {
         <li>
           <Link
             role="button"
-            href="/tickets/new"
-            {...(pathname === "/tickets/new" ? activeProps : inactiveProps)}
+            href={urlPath("/tickets/new", tenant)}
+            {...(pathname === urlPath("/tickets/new", tenant) ? activeProps : inactiveProps)}
           >
             Create new Ticket
           </Link>
@@ -50,8 +51,8 @@ export function Navigation() {
         <li>
           <Link
             role="button"
-            href="/tickets/users"
-            {...(pathname === "/tickets/users" ? activeProps : inactiveProps)}
+            href={urlPath("/tickets/users", tenant)}
+            {...(pathname === urlPath("/tickets/users", tenant) ? activeProps : inactiveProps)}
           >
             User List
           </Link>
@@ -61,7 +62,7 @@ export function Navigation() {
         <li>
           <Link
             role="button"
-            href="/logout"
+            href={urlPath("/logout", tenant)}
             className="secondary"
             prefetch={false}
             onClick={(e) => {

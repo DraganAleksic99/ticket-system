@@ -3,8 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   redirects: async () => [
     {
-      source: "/logout",
-      destination: "/auth/logout",
+      source: "/:tenant/logout",
+      destination: "/:tenant/auth/logout",
       permanent: true,
     },
   ],
