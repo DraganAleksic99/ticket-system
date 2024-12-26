@@ -12,7 +12,7 @@ export default async function TicketsLayout({
   return (
     <>
       <section style={{ borderBottom: "1px solid gray" }}>
-        <TenantName tenantName={tenant as string} />
+        <TenantName tenant={tenant as string} />
         <Navigation tenant={tenant as string} />
       </section>
       <section>{children}</section>

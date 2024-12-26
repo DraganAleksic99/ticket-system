@@ -21,7 +21,7 @@ export async function POST(
     }
   );
 
-  if (error) {
+  if (error || !linkData.user.app_metadata?.tenants.includes(tenant)) {
     return NextResponse.redirect(
       buildUrl("/error?type=magiclink", tenant as string, request),
       302

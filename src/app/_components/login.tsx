@@ -15,7 +15,7 @@ export enum FormType {
 export const Login = ({
   formType,
   tenant,
-  tenantName
+  tenantName,
 }: {
   formType: FormType;
   tenant: string;
@@ -33,9 +33,14 @@ export const Login = ({
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN") {
-        router.push(`/${tenant}/tickets`);
+        if (session?.user.app_metadata.tenants?.includes(tenant)) {
+          router.push(`/${tenant}/tickets`);
+        } else {
+          supabase.auth.signOut();
+          alert("Could not sign in, tenant does not match.");
+        }
       }
     });
 
@@ -75,7 +80,9 @@ export const Login = ({
         <header>
           {isPasswordRecovery && <strong>Request new password</strong>}
           {!isPasswordRecovery && <strong>Login</strong>}
-          <div style={{ display: "block", fontSize: "0.7em" }}>{tenantName}</div>
+          <div style={{ display: "block", fontSize: "0.7em" }}>
+            {tenantName}
+          </div>
         </header>
         <fieldset>
           <label htmlFor="email">
