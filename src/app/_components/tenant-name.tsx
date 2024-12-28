@@ -4,19 +4,13 @@ export async function TenantName({ tenant }: { tenant: string }) {
   let tenantName = "Unknown";
   const supabase = await getSupabaseCookiesUtilClient();
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("tenants")
     .select("name")
     .eq("id", tenant)
     .single();
 
   tenantName = data?.name ?? tenantName;
-
-  console.log({
-    tenant,
-    data,
-    error,
-  });
 
   return (
     <header style={{ marginBottom: "10px" }}>

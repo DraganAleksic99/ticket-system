@@ -162,6 +162,16 @@ export const Login = ({
             Go to Password Recovery
           </Link>
         )}
+        <Link
+          href={urlPath("/register", tenant)}
+          style={{
+            textAlign: "center",
+            display: "block",
+            marginTop: "1em",
+          }}
+        >
+          Create account
+        </Link>
       </article>
     </form>
   );
