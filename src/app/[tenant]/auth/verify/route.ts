@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { MobileOtpType, EmailOtpType } from "@supabase/supabase-js";
 import { getSupabaseCookiesUtilClient } from "@/app/supabase-utils/cookies-util-client";
 import { Params } from "next/dist/server/request/params";
 import { buildUrl } from "@/app/utils/url-helpers";
@@ -8,13 +9,17 @@ export async function GET(
   { params }: { params: Params }
 ) {
   const { tenant } = await params;
+  const supabase = await getSupabaseCookiesUtilClient();
   const { searchParams } = new URL(request.url);
+  
   const hashed_token = searchParams.get("hashed_token");
   const isRecovery = searchParams.get("type") === "recovery";
-  const supabase = await getSupabaseCookiesUtilClient();
+  const isSignUp = searchParams.get("type") === "signup";
 
-  let verifyType = "magiclink";
+  let verifyType:  MobileOtpType | EmailOtpType = "magiclink";
+
   if (isRecovery) verifyType = "recovery";
+  else if (isSignUp) verifyType = "signup";
 
   const { error } = await supabase.auth.verifyOtp({
     type: verifyType,

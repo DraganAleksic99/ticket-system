@@ -5,14 +5,21 @@ import { urlPath } from "@/app/utils/url-helpers";
 
 export default async function ErrorPage({
   searchParams,
-  params
+  params,
 }: {
   searchParams: SearchParams;
-  params: Params
+  params: Params;
 }) {
-  const { type } = await searchParams;
-  const { tenant } = await params
-  const knownErrors = ["login-failed", "magiclink", "invalid_magiclink"];
+  const { type, email } = await searchParams;
+  const { tenant } = await params;
+  const knownErrors = [
+    "login-failed",
+    "magiclink",
+    "invalid_magiclink",
+    "register_mail_mismatch",
+    "register_mail_exists",
+    "register_unknown",
+  ];
 
   return (
     <div style={{ textAlign: "center" }}>
@@ -31,6 +38,22 @@ export default async function ErrorPage({
           one.
         </strong>
       )}
+      {type === "register_mail_mismatch" && (
+        <strong>
+          You are not legitimated to register an account with <u>{email}.</u>
+        </strong>
+      )}
+      {type === "register_mail_exists" && (
+        <strong>
+          There is already an account registered with &nbsp;
+          <u>{searchParams.email}</u>.
+        </strong>
+      )}
+      {type === "register_unknown" && (
+        <strong>
+          Sorry but an unknown error occurred when trying to create an account.
+        </strong>
+      )}
       {!knownErrors.includes(type as string) && (
         <strong>
           Something went wrong. Please try again or contact support.
@@ -38,7 +61,10 @@ export default async function ErrorPage({
       )}
       <br />
       <br />
-      <Link role="button" href={urlPath("/", tenant as string)}>
+      <Link
+        role="button"
+        href={urlPath(`/${email && "register"}`, tenant as string)}
+      >
         Go back.
       </Link>
     </div>
