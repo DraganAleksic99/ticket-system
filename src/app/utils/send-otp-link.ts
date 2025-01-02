@@ -20,7 +20,7 @@ export async function sendOTPLink(
 
   const user = linkData.user;
 
-  if (error || !user?.app_metadata?.tenants.includes(tenant)) {
+  if (error || !user?.app_metadata?.tenants?.includes(tenant)) {
     return false;
   }
 

@@ -82,7 +82,7 @@ export async function POST(
   }
 
   const { data: serviceUser } = await supabaseAdmin
-    .from("service-users")
+    .from("service_users")
     .insert({
       full_name: name,
       supabase_user: userData.user.id,
@@ -91,7 +91,7 @@ export async function POST(
     .single();
 
   const { error: tpError } = await supabaseAdmin
-    .from("tenant-permissions")
+    .from("tenant_permissions")
     .insert({
       tenant,
       service_user: serviceUser?.id,
