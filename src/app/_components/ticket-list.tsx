@@ -7,12 +7,15 @@ export const dynamic = "force-dynamic";
 export async function TicketList({
   tenant,
   pageParam,
+  searchParam,
 }: {
   tenant: string;
   pageParam: string;
+  searchParam: string;
 }) {
   const supabase = await getSupabaseCookiesUtilClient();
   let page = 1;
+  const searchValue = searchParam?.trim();
 
   if (Number.isInteger(Number(pageParam)) && Number(pageParam) > 0) {
     page = Number(pageParam);
@@ -20,22 +23,38 @@ export async function TicketList({
 
   const startingPoint = (page - 1) * 6;
 
-  const { data: tickets, error } = await supabase
+  let ticketsStatement = supabase
     .from("tickets")
     .select("*")
-    .eq("tenant", tenant)
-    .order("status", { ascending: true })
-    .order("created_at", { ascending: false })
-    .range(startingPoint, startingPoint + 5);
+    .eq("tenant", tenant);
 
-  if (error) {
-    return <h1>Could not load ticket details. Please refresh the page.</h1>;
-  }
-
-  const { count } = await supabase
+  let countStatement = supabase
     .from("tickets")
     .select("*", { count: "exact", head: true })
     .eq("tenant", tenant);
+
+  if (searchValue) {
+    const cleanSearchString = searchValue
+      .replaceAll('"', "")
+      .replaceAll("\\", "")
+      .replaceAll("%", "");
+
+    const postgrestSearchValue = '"%' + cleanSearchString + '%"';
+    const postgrestFilterString =
+      `title.ilike.${postgrestSearchValue}` +
+      `, description.ilike.${postgrestSearchValue}`;
+
+    countStatement = countStatement.or(postgrestFilterString)
+    ticketsStatement = ticketsStatement.or(postgrestFilterString);
+  }
+
+  ticketsStatement = ticketsStatement
+  .order("status", { ascending: true })
+  .order("created_at", { ascending: false })
+  .range(startingPoint, startingPoint + 5);
+
+  const { count } = await countStatement;
+  const { data: tickets } = await ticketsStatement;
 
   const moreRows = count! - page * 6 > 0;
 
@@ -73,7 +92,7 @@ export async function TicketList({
           <Link
             style={{ marginLeft: "auto" }}
             role="button"
-            href={{ query: { page: page + 1 } }}
+            href={{ query: { page: page + 1, search: searchParam } }}
           >
             Next page
           </Link>
