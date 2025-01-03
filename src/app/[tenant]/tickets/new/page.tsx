@@ -1,24 +1,8 @@
-"use client";
+import { Params } from "next/dist/server/request/params";
+import NewTicketForm from "@/app/_components/new-ticket-form";
 
-import { useRef } from "react";
+export default async function CreateTicket({ params }: { params: Params }) {
+  const { tenant } = await params;
 
-export default function CreateTicket() {
-  const ticketTitleRef = useRef(null);
-  const ticketDescriptionRef = useRef(null);
-
-  return (
-    <article>
-      <h3>Create a new ticket</h3>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          alert("TODO: Add a new ticket");
-        }}
-      >
-        <input ref={ticketTitleRef} placeholder="Add a title" />
-        <textarea ref={ticketDescriptionRef} placeholder="Add a comment" />
-        <button type="submit">Create ticket now</button>
-      </form>
-    </article>
-  );
+  return <NewTicketForm tenant={tenant as string} />;
 }
